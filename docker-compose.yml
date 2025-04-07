@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
 
-  postgres:
+  postgres_blog:
     image: postgres:15
     container_name: postgres_blog
     restart: always
@@ -13,7 +13,20 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_blog_data:/var/lib/postgresql/data
+    networks:
+      - blog-network
+
+  postgres_sonar:
+    image: postgres:15
+    container_name: postgres_sonar
+    restart: always
+    environment:
+      POSTGRES_USER: sonar_admin
+      POSTGRES_PASSWORD: '@SonarSecure123'
+      POSTGRES_DB: sonar
+    volumes:
+      - postgres_sonar_data:/var/lib/postgresql/data
     networks:
       - blog-network
 
@@ -24,16 +37,17 @@ services:
     ports:
       - "9000:9000"
     environment:
-      SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
+      SONAR_JDBC_URL: jdbc:postgresql://postgres_sonar:5432/sonar
       SONAR_JDBC_USERNAME: sonar_admin
       SONAR_JDBC_PASSWORD: '@SonarSecure123'
     depends_on:
-      - postgres
+      - postgres_sonar
     networks:
       - blog-network
 
 volumes:
-  postgres_data:
+  postgres_blog_data:
+  postgres_sonar_data:
 
 networks:
   blog-network:
